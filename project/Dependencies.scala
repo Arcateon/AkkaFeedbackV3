@@ -14,4 +14,5 @@ object Dependencies {
   lazy val log = "ch.qos.logback" % "logback-classic" % "1.3.1"
   lazy val scalaLogging =  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
   lazy val sendEmail = "com.teko.common" %% "email-service" % "0.0.6"
+  lazy val scalaCsv = "com.github.tototoshi" %% "scala-csv" % "1.3.10"
 }

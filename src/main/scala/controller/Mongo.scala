@@ -1,6 +1,7 @@
 package controller
 
 
+import com.github.tototoshi.csv.CSVWriter
 import com.typesafe.config._
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.codecs.Macros
@@ -15,7 +16,7 @@ import org.mongodb.scala.model.Filters._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import java.io.PrintWriter
+import java.io.{File, PrintWriter}
 
 object Mongo {
 
@@ -61,5 +62,29 @@ object Mongo {
     feedback.insertOne(document).toFuture()
   }
 
+  def createFileWithFeedback(dateStart: String, dateEnd: String): Unit = {
+
+    val documentsFuture = feedback.find(and(lt("date", dateEnd),
+      gt("date", dateStart))).toFuture()
+
+    documentsFuture map { documents =>
+      documents map { doc =>
+        val questionAnswer = doc.content.map (x =>
+          s"${x.question}, ${x.answer}"
+          ).mkString(", ")
+        val file = new File("feedbackData.csv")
+        val writer = CSVWriter.open(file)
+
+        writer.writeAll(List(List("siteId", "date", "email", "t", "fullname", "question - answer")))
+        writer.close()
+
+        val newWriter = CSVWriter.open("feedbackData.csv", append = true)
+        newWriter.writeRow(List(doc.siteId, doc.date, doc.callback,
+          doc.t, doc.fullName, questionAnswer))
+        writer.close()
+        }
+      }
+    }
 
 }
+

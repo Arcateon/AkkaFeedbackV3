@@ -39,12 +39,24 @@ object Routes {
               Future.successful("failed")
             case _ =>
               logger.info("Adding new feedback into db")
-              EmailUtils.sendNewFeedback(requestBody.email)
+              EmailUtils.sendNewFeedback(requestBody.siteId, requestBody.t,
+                requestBody.fullName, requestBody.email, requestBody.content)
               Future.successful("Email with feedback is sent")
           }
         }
         complete(resultF)
       }
-    }
+    } ~
+      path("getFile") {
+        (post & entity(as[String])) { body =>
+          logger.info("Getting the request body")
+          val requestJson = JsonMethods.parse(body)
+          val requestBody = requestJson.extract[GetFeedbackData]
+
+          Mongo.createFileWithFeedback(requestBody.dateStart, requestBody.dateEnd)
+
+          complete("File was created")
+        }
+      }
   }
 }

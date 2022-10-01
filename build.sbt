@@ -18,7 +18,8 @@ lazy val root = (project in file("."))
       mongoDb,
       log,
       scalaLogging,
-      sendEmail
+      sendEmail,
+      scalaCsv
     )
   )
 
