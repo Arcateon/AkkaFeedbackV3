@@ -7,12 +7,14 @@ import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.codecs.Macros
 import org.mongodb.scala.{ConnectionString, MongoClient, MongoClientSettings, MongoCollection, MongoDatabase}
 import com.mongodb.{ServerApi, ServerApiVersion}
+import com.typesafe.scalalogging.Logger
 import controller.Cases._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.bson.codecs.configuration.{CodecProvider, CodecRegistry}
 import org.json4s.Formats
 import org.json4s.jackson.Serialization
 import org.mongodb.scala.model.Filters._
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -25,6 +27,7 @@ object Mongo {
     getConfig("mongoConf")
   implicit val formats: Formats = org.json4s.DefaultFormats
     .withLong.withDouble.withStrictOptionParsing
+  private val logger = Logger(LoggerFactory.getLogger(this.getClass))
 
   private val uri: String = conf.getString("url")
   private val login: String = conf.getString("login")
@@ -62,10 +65,10 @@ object Mongo {
     feedback.insertOne(document).toFuture()
   }
 
-  def createFileWithFeedback(dateStart: String, dateEnd: String): Unit = {
+  def createFileWithFeedback(siteId: String, dateStart: String, dateEnd: String): Unit = {
 
     val documentsFuture = feedback.find(and(lt("date", dateEnd),
-      gt("date", dateStart))).toFuture()
+      gt("date", dateStart), equal("siteId", siteId))).toFuture()
 
     documentsFuture map { documents =>
       documents map { doc =>
@@ -83,8 +86,30 @@ object Mongo {
           doc.t, doc.fullName, questionAnswer))
         writer.close()
         }
-      }
+      } recover {
+      case _: Exception =>
+        logger.info("Invalid date")
     }
+    }
+
+  def searchDocumentsByDate(siteId: String, dateStart: String, dateEnd: String): Future[String] = {
+
+    val documentsFuture = feedback.find(and(lt("date", dateEnd),
+      gt("date", dateStart), equal("siteId", siteId))).toFuture()
+
+    documentsFuture map { documents =>
+      val result: Seq[String] = documents map { doc =>
+        Serialization.write(InputDataWithDate(
+          doc.siteId, doc.date, doc.callback, doc.t, doc.fullName, doc.content
+        ))
+      }
+      result.mkString("\n")
+    } recoverWith {
+      case _: Exception =>
+        logger.info("Invalid date")
+        Future.successful("Invalid date")
+    }
+  }
 
 }
 

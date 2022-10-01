@@ -26,7 +26,7 @@ object EmailUtils {
   )
   val connector: MailSmtpConnector = MailSmtpConnector(emailConfig)
 
-  def sendNewFeedback(siteId: String, t: String, fullname: String,
+  def sentNewFeedback(siteId: String, t: String, fullname: String,
                       email: String, contentList: List[QuestionAnswer]): Unit = {
 
     val questionAnswer = contentList.map(x => "<ul>" +
@@ -75,6 +75,21 @@ object EmailUtils {
     val contentTypeMsg = "text/html; charset=UTF8"
 
     connector.sendMessage(sendTo, sendCc, sendBcc, subject, text, sendFrom,
+      attachmentFromPath, contentTypeMsg)
+  }
+
+  def sentFile(email: String): Unit = {
+
+    val sentTo = Seq(email)
+    val sendCc: Seq[String] = Seq.empty
+    val sendBcc: Seq[String] = Seq.empty
+    val subject = "New feedback"
+    val text = "File as an attachment"
+    val sendFrom = Option("server")
+    val attachmentFromPath: Set[String] = Set("feedbackData.csv")
+    val contentTypeMsg = "text/html; charset=UTF8"
+
+    connector.sendMessage(sentTo, sendCc, sendBcc, subject, text, sendFrom,
       attachmentFromPath, contentTypeMsg)
   }
 

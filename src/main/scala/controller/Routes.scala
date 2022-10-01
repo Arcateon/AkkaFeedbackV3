@@ -39,7 +39,7 @@ object Routes {
               Future.successful("failed")
             case _ =>
               logger.info("Adding new feedback into db")
-              EmailUtils.sendNewFeedback(requestBody.siteId, requestBody.t,
+              EmailUtils.sentNewFeedback(requestBody.siteId, requestBody.t,
                 requestBody.fullName, requestBody.email, requestBody.content)
               Future.successful("Email with feedback is sent")
           }
@@ -47,15 +47,33 @@ object Routes {
         complete(resultF)
       }
     } ~
-      path("getFile") {
+      path("getFileOrElse") {
         (post & entity(as[String])) { body =>
           logger.info("Getting the request body")
-          val requestJson = JsonMethods.parse(body)
-          val requestBody = requestJson.extract[GetFeedbackData]
-
-          Mongo.createFileWithFeedback(requestBody.dateStart, requestBody.dateEnd)
-
-          complete("File was created")
+          if (body.contains("email")) {
+            val requestJson = JsonMethods.parse(body)
+            val requestBody = requestJson.extract[GetFeedbackDataWithEmail]
+            Mongo.createFileWithFeedback(requestBody.siteId, requestBody.dateStart,
+              requestBody.dateEnd)
+            EmailUtils.sentFile(requestBody.email)
+            logger.info("File was created and sent")
+            complete("File was created and sent")
+          } else {
+            val resultF = {
+              val requestJson = JsonMethods.parse(body)
+              val requestBody = requestJson.extract[GetFeedbackData]
+              logger.info("Email field not found")
+              Mongo.searchDocumentsByDate(requestBody.siteId, requestBody.dateStart,
+                requestBody.dateEnd) map { body =>
+                  if (body.nonEmpty) {
+                    Future.successful(body)
+                  } else {
+                    Future.successful("Invalid date")
+                  }
+                }
+            }
+            complete(resultF)
+          }
         }
       }
   }
