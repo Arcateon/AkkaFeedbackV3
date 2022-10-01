@@ -68,6 +68,7 @@ object Routes {
                   if (body.nonEmpty) {
                     Future.successful(body)
                   } else {
+                    logger.error("Invalid date")
                     Future.successful("Invalid date")
                   }
                 }
@@ -86,8 +87,12 @@ object Routes {
                     if (body.nonEmpty) {
                       Mongo.createFileWithFeedback(siteId, dateStart, dateEnd)
                       EmailUtils.sentFile(email)
+                      logger.info("File was created and sent")
                       Future.successful("File was created and sent")
-                    } else Future.successful("Invalid date")
+                    } else {
+                      logger.error("Invalid date")
+                      Future.successful("Invalid date")
+                    }
                   }
                 }
                 complete(resultF)
