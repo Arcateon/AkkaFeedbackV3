@@ -13,16 +13,16 @@ object EmailUtils {
 
   val emailConfig: EmailConfig = EmailConfig(
     email = conf.getString("sender"),
-    protocolName = ("default"),
+    protocolName = "default",
     pwd = conf.getString("pwd"),
     smtpSender = conf.getString("sender"),
     smtpHost = conf.getString("smtpHost"),
-    imapHost = ("none"),
+    imapHost = "none",
     smtpPort = conf.getString("smtpPort"),
-    imapPort = ("none"),
-    outlookUser = ("none"),
-    clientId = ("none"),
-    tenantId = ("none"),
+    imapPort = "none",
+    outlookUser = "none",
+    clientId = "none",
+    tenantId = "none",
   )
   val connector: MailSmtpConnector = MailSmtpConnector(emailConfig)
 

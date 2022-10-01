@@ -7,11 +7,13 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config._
 import org.json4s.Formats
 
+import scala.concurrent.ExecutionContextExecutor
+
 object HttpServer {
 
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
-  implicit val executionContext = system.dispatcher
+  implicit val system: ActorSystem = ActorSystem()
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   implicit val formats: Formats = org.json4s.DefaultFormats
     .withLong.withDouble.withStrictOptionParsing
 

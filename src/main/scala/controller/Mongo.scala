@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import java.io.{File, PrintWriter}
+import java.io.File
 
 object Mongo {
 
@@ -30,11 +30,11 @@ object Mongo {
   private val logger = Logger(LoggerFactory.getLogger(this.getClass))
 
   private val uri: String = conf.getString("url")
-  private val login: String = conf.getString("login")
-  private val pass: String = conf.getString("pass")
+//  private val login: String = conf.getString("login")
+//  private val pass: String = conf.getString("pass")
   private val db: String = conf.getString("dataBase")
 
-  private val connectionString = s"mongodb://$login:$pass/?authSource=$db"
+//  private val connectionString = s"mongodb://$login:$pass/?authSource=$db"
 
   private val mongoClientSettings = MongoClientSettings.builder()
     .applyConnectionString(ConnectionString(uri))
