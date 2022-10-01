@@ -75,6 +75,26 @@ object Routes {
             complete(resultF)
           }
         }
+      } ~ // http://localhost:8088/getFileOrElse/?dateStart=2022-01-34&dateEnd=2022-34-22&siteId=Gachi_nails&email=arcateon@gmail.com
+      pathPrefix("getFileOrElse") {
+        parameters("dateStart") { dateStart =>
+          parameters("dateEnd") { dateEnd =>
+            parameters("siteId") { siteId =>
+              parameters("email") { email =>
+                val resultF = {
+                  Mongo.searchDocumentsByDate(siteId, dateStart, dateEnd) map { body =>
+                    if (body.nonEmpty) {
+                      Mongo.createFileWithFeedback(siteId, dateStart, dateEnd)
+                      EmailUtils.sentFile(email)
+                      Future.successful("File was created and sent")
+                    } else Future.successful("Invalid date")
+                  }
+                }
+                complete(resultF)
+              }
+            }
+          }
+        }
       }
   }
 }
